@@ -1,4 +1,5 @@
 use iced::{Point, Rectangle, Size, canvas::Path};
+use super::Drawable;
 
 pub struct Paddle {
     x: f32,
@@ -17,13 +18,6 @@ impl Paddle {
 	Paddle { x, y, width, height}
     }
 
-    pub fn draw(&self, frame_size: Rectangle<f32>) -> Path {
-	Path::rectangle(Point { x: self.x * frame_size.width,
-				y: self.y * frame_size.height},
-			Size { width: self.width * frame_size.width,
-			       height: self.height * frame_size.height})
-    }
-
     pub fn slide(&mut self, direction: Direction) -> () {
 	match direction {
 	    Direction::Up if self.y > 0.0 => self.y = self.y - 0.01,
@@ -31,4 +25,14 @@ impl Paddle {
 	    _ => ()
 	}
     }
+}
+
+impl Drawable for Paddle {
+    fn draw(&self, frame_size: Rectangle<f32>) -> Path {
+	Path::rectangle(Point { x: self.x * frame_size.width,
+				y: self.y * frame_size.height},
+			Size { width: self.width * frame_size.width,
+			       height: self.height * frame_size.height})
+    }
+
 }

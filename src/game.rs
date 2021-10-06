@@ -1,5 +1,6 @@
 mod paddle;
 mod ball;
+mod drawable;
 
 use iced::{time, Application, Command, Container, Element, Length, Point, Size, canvas::{Cursor, Event, event::{self, Status}}, executor, keyboard::KeyCode};
 use iced::canvas::{self, Canvas, Frame, Geometry, Path, Program};
@@ -7,13 +8,13 @@ use iced::{Color, Rectangle};
 use paddle::Paddle;
 use ball::Ball;
 use std::time::{Duration, Instant};
+use drawable::Drawable;
+use std::boxed::Box;
 
 use self::paddle::Direction;
 
 pub struct Game {
-    paddle_one: Paddle,
-    paddle_two: Paddle,
-    ball: Ball,
+    game_objects: Vec<Box<dyn Drawable>>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -32,9 +33,10 @@ impl Application for Game {
     type Flags = ();
 
     fn new(flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
-	(Game { paddle_one: Paddle::new(0.02, 0.1, 0.02, 0.10),
-		paddle_two: Paddle::new(0.96, 0.1, 0.02, 0.10),
-		ball: Ball::new(0.5, 0.5, 0.01) }, Command::none())
+	(Game { game_objects: vec![ Box::new(Paddle::new(0.02, 0.1, 0.02, 0.10)),
+				    Box::new(Paddle::new(0.96, 0.1, 0.02, 0.10)),
+				    Box::new(Ball::new(0.5, 0.5, 0.01)) ] },
+	 Command::none())
     }
 
     fn title(&self) -> String {
@@ -47,10 +49,10 @@ impl Application for Game {
         clipboard: &mut iced::Clipboard,
     ) -> iced::Command<Self::Message> {
 	match message {
-	    Message::None => Command::none(),
-	    Message::MoveDown => { self.paddle_one.slide(Direction::Down); Command::none() },
-	    Message::MoveUp => { self.paddle_one.slide(Direction::Up); Command::none() },
-	    Message::Tick(_) => { self.ball.move_ball(); Command::none() },
+	    _ => Command::none(),
+//	    Message::MoveDown => { self.paddle_one.slide(Direction::Down); Command::none() },
+	    //	    Message::MoveUp => { self.paddle_one.slide(Direction::Up); Command::none() },
+	    //	    Message::Tick(_) => { self.ball.move_ball(); Command::none() },
 	}
     }
 
@@ -76,13 +78,10 @@ impl Program<Message> for Game {
                 // We prepare a new `Frname`
         let mut frame = Frame::new(bounds.size());
 
-	let paddle_one = self.paddle_one.draw(bounds);
-	let paddle_two = self.paddle_two.draw(bounds);
-	let ball = self.ball.draw(bounds);
-
-	frame.fill(&paddle_one, Color::BLACK);
-	frame.fill(&paddle_two, Color::BLACK);
-	frame.fill(&ball, Color::BLACK);
+	let objects = &self.game_objects;
+	
+	objects.into_iter().map(|drawable_pointer| drawable_pointer.draw(bounds))
+	    .for_each(|path| frame.fill(&path, Color::BLACK));
 
         // Finally, we produce the geometry
         vec![frame.into_geometry()]

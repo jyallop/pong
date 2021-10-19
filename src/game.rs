@@ -26,6 +26,16 @@ pub enum Message {
     Tick(Instant),
 }
 
+impl Game {
+    fn move_computer(&mut self) {
+	if self.paddle_two.is_above(self.ball.get_top()) {
+	    self.paddle_two.slide(Direction::Up)
+	} else if self.paddle_two.is_below(self.ball.get_bottom()) {	
+	    self.paddle_two.slide(Direction::Down)
+	}
+    }
+}
+
 impl Application for Game {
     type Executor = executor::Default;
 
@@ -35,7 +45,7 @@ impl Application for Game {
 
     fn new(flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
 	(Game { paddle_one: Paddle::new(0.02, 0.1, 0.02, 0.10),
-		paddle_two: Paddle::new(0.96, 0.1, 0.02, 0.10),
+		paddle_two: Paddle::new(0.96, 0.3, 0.02, 0.10),
 		ball: Ball::new(0.5, 0.5, 0.01) },
 	 Command::none())
     }
@@ -50,9 +60,9 @@ impl Application for Game {
         clipboard: &mut iced::Clipboard,
     ) -> iced::Command<Self::Message> {
 	match message {
-	    Message::MoveDown => { println!("hello"); self.paddle_one.slide(Direction::Down); Command::none() },
+	    Message::MoveDown => { self.paddle_one.slide(Direction::Down); Command::none() },
 	    Message::MoveUp => { self.paddle_one.slide(Direction::Up); Command::none() },
-	    Message::Tick(_) => { self.ball.move_ball(); Command::none() },
+	    Message::Tick(_) => { self.move_computer(); self.ball.move_ball(); Command::none() },
 	    _ => Command::none(),
 	}
     }

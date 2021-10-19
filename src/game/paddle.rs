@@ -22,6 +22,8 @@ impl Paddle {
 	match direction {
 	    Direction::Up if self.y > 0.0 => self.y = self.y - 0.01,
 	    Direction::Down if self.y < 0.9 => self.y = self.y + 0.01,
+//	    Direction::Up => self.y = min(0.0, self.y - 0.01),
+//	    Direction::Down => self.y = max(0.9, self.y + 0.01),
 	    _ => ()
 	}
     }
@@ -35,4 +37,20 @@ impl Drawable for Paddle {
 			       height: self.height * frame_size.height})
     }
 
+}
+
+fn min(x: f32, y: f32) -> f32 {
+    if x > y {
+	y
+    } else {
+	x
+    }
+}
+
+fn max(x: f32, y: f32) -> f32 {
+    if x < y {
+	y
+    } else {
+	x
+    }
 }

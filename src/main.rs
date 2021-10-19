@@ -1,10 +1,6 @@
 mod game;
 
-use iced::{
-    canvas::{self, Cursor, Path, Stroke},
-    executor, time, window, Application, Canvas, Clipboard, Color, Command,
-    Element, Length, Point, Rectangle, Settings, Size, Subscription, Vector,
-};
+use iced::{ Application, Settings };
 
 use std::time::Instant;
 use game::Game;

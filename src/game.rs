@@ -1,6 +1,7 @@
 mod paddle;
 mod ball;
 mod drawable;
+mod physics;
 
 use iced::{time, Application, Command, Container, Element, Length, canvas::{Cursor, Event, event::Status}, executor, keyboard::KeyCode};
 use iced::canvas::{ Canvas, Frame, Program};
@@ -62,7 +63,17 @@ impl Application for Game {
 	match message {
 	    Message::MoveDown => { self.paddle_one.slide(Direction::Down); Command::none() },
 	    Message::MoveUp => { self.paddle_one.slide(Direction::Up); Command::none() },
-	    Message::Tick(_) => { self.move_computer(); self.ball.move_ball(); Command::none() },
+	    Message::Tick(_) => { self.move_computer();
+				  self.ball.move_ball();
+				  if (self.ball.velocity.x < 0.0) & physics::check_collision(&self.ball, &self.paddle_one) {
+						println!("collision one");
+					//	self.ball.flip_x();
+				  };
+				  if (self.ball.velocity.x > 0.0) & physics::check_collision(&self.ball, &self.paddle_two) {
+						println!("collision two");
+						//self.ball.flip_x();
+				  };
+				  Command::none() },
 	    _ => Command::none(),
 	}
     }

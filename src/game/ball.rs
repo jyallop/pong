@@ -1,19 +1,28 @@
 use iced::{ Point, canvas::Path, Rectangle, Vector };
 use std::ops::Add;
+use std::ops::Neg;
 use super::Drawable;
 
 pub struct Ball {
-    center: Point,
-    radius: f32,
+    pub center: Point,
+    pub radius: f32,
+    pub velocity: Vector,
 }
 
 impl Ball {
+    pub fn new_ball(x: f32, y: f32, radius: f32, velocity_x: f32, velocity_y: f32) -> Self {
+	Ball { center: Point::new(x, y),
+	       radius: radius,
+	       velocity: Vector::new(velocity_x, velocity_y)
+	}
+    }
+
     pub fn new(x: f32, y: f32, radius: f32) -> Self {
-	Ball { center: Point::new(x, y), radius: radius }
+	Ball::new_ball(x, y, radius, 0.01, 0.01)
     }
 
     pub fn move_ball(&mut self) -> () {
-	self.center = self.center.add(Vector::new(0.01, -0.01));
+	self.center = self.center.add(self.velocity);
     }
 
     pub fn get_top(&self) -> f32 {
@@ -22,6 +31,14 @@ impl Ball {
 
     pub fn get_bottom(&self) -> f32 {
 	self.center.y - self.radius
+    }
+
+    pub fn flip_x(&mut self) {
+	self.velocity.x = Neg::neg(self.velocity.x)
+    }
+
+    pub fn flip_y(&mut self) {
+	self.velocity.y = Neg::neg(self.velocity.y)
     }
 }
 

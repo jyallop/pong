@@ -2,19 +2,20 @@ mod paddle;
 mod ball;
 mod drawable;
 
-use iced::{time, Application, Command, Container, Element, Length, Point, Size, canvas::{Cursor, Event, event::{self, Status}}, executor, keyboard::KeyCode};
-use iced::canvas::{self, Canvas, Frame, Geometry, Path, Program};
+use iced::{time, Application, Command, Container, Element, Length, canvas::{Cursor, Event, event::Status}, executor, keyboard::KeyCode};
+use iced::canvas::{ Canvas, Frame, Program};
 use iced::{Color, Rectangle};
 use paddle::Paddle;
 use ball::Ball;
 use std::time::{Duration, Instant};
 use drawable::Drawable;
-use std::boxed::Box;
 
 use self::paddle::Direction;
 
 pub struct Game {
-    game_objects: Vec<Box<dyn Drawable>>,
+    paddle_one: Paddle,
+    paddle_two: Paddle,
+    ball: Ball,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -25,6 +26,16 @@ pub enum Message {
     Tick(Instant),
 }
 
+impl Game {
+    fn move_computer(&mut self) {
+	if self.paddle_two.is_above(self.ball.get_top()) {
+	    self.paddle_two.slide(Direction::Up)
+	} else if self.paddle_two.is_below(self.ball.get_bottom()) {	
+	    self.paddle_two.slide(Direction::Down)
+	}
+    }
+}
+
 impl Application for Game {
     type Executor = executor::Default;
 
@@ -33,9 +44,9 @@ impl Application for Game {
     type Flags = ();
 
     fn new(flags: Self::Flags) -> (Self, iced::Command<Self::Message>) {
-	(Game { game_objects: vec![ Box::new(Paddle::new(0.02, 0.1, 0.02, 0.10)),
-				    Box::new(Paddle::new(0.96, 0.1, 0.02, 0.10)),
-				    Box::new(Ball::new(0.5, 0.5, 0.01)) ] },
+	(Game { paddle_one: Paddle::new(0.02, 0.1, 0.02, 0.10),
+		paddle_two: Paddle::new(0.96, 0.3, 0.02, 0.10),
+		ball: Ball::new(0.5, 0.5, 0.01) },
 	 Command::none())
     }
 
@@ -49,10 +60,10 @@ impl Application for Game {
         clipboard: &mut iced::Clipboard,
     ) -> iced::Command<Self::Message> {
 	match message {
+	    Message::MoveDown => { self.paddle_one.slide(Direction::Down); Command::none() },
+	    Message::MoveUp => { self.paddle_one.slide(Direction::Up); Command::none() },
+	    Message::Tick(_) => { self.move_computer(); self.ball.move_ball(); Command::none() },
 	    _ => Command::none(),
-//	    Message::MoveDown => { self.paddle_one.slide(Direction::Down); Command::none() },
-	    //	    Message::MoveUp => { self.paddle_one.slide(Direction::Up); Command::none() },
-	    //	    Message::Tick(_) => { self.ball.move_ball(); Command::none() },
 	}
     }
 
@@ -78,10 +89,11 @@ impl Program<Message> for Game {
                 // We prepare a new `Frname`
         let mut frame = Frame::new(bounds.size());
 
-	let objects = &self.game_objects;
-	
-	objects.into_iter().map(|drawable_pointer| drawable_pointer.draw(bounds))
-	    .for_each(|path| frame.fill(&path, Color::BLACK));
+	let paddle_one = frame.fill(&self.paddle_one.draw(bounds), Color::BLACK);
+
+	let paddle_two = frame.fill(&self.paddle_two.draw(bounds), Color::BLACK);
+
+	let ball = frame.fill(&self.ball.draw(bounds), Color::BLACK);
 
         // Finally, we produce the geometry
         vec![frame.into_geometry()]

@@ -13,9 +13,16 @@ impl Ball {
     }
 
     pub fn move_ball(&mut self) -> () {
-	self.center = self.center.add(Vector::new(0.01, 0.01));
+	self.center = self.center.add(Vector::new(0.01, -0.01));
     }
 
+    pub fn get_top(&self) -> f32 {
+	self.center.y + self.radius
+    }
+
+    pub fn get_bottom(&self) -> f32 {
+	self.center.y - self.radius
+    }
 }
 
 impl Drawable for Ball {

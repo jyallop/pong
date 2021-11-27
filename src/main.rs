@@ -1,4 +1,6 @@
 mod pong;
+mod game;
+mod config;
 
 use bevy::prelude::*;
 use crate::pong::PongPlugin;

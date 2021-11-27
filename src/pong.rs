@@ -61,29 +61,35 @@ pub struct Ball {
 }
 
 fn paddle_movement(time: Res<Time>,
-			  keyboard_input: Res<Input<KeyCode>>,
-			  mut query: Query<(&Player, &mut Transform)>) {
+		   windows: Res<Windows>,
+		   keyboard_input: Res<Input<KeyCode>>,
+		   mut query: Query<(&Player, &mut Transform)>) {
     if let Ok((_paddle, mut transform)) = query.single_mut() {
+	let window = windows.get_primary().unwrap();
         let mut direction = 0.0;
         if keyboard_input.pressed(KeyCode::Up) {
-            direction += 100.0;
+            direction = window.height() / 10.0;
         }
 
         if keyboard_input.pressed(KeyCode::Down) {
-            direction -= 100.0;
+            direction = -(window.height() / 10.0);
         }
 
         let translation = &mut transform.translation;
         // move the paddle horizontally
         translation.y += time.delta_seconds() * direction * 5.0;
         // bound the paddle within the walls
-        translation.y = translation.y.min(300.0).max(-300.0);
+	let max = (window.height() / 2.0) - (PADDLE_HEIGHT / 2.0);
+        translation.y = translation.y.min(max).max(-max);
     }
 }
 
-fn scoring(mut query: Query<(&mut Ball, &Transform)>) {
-    if let Ok((mut ball, transform)) = query.single_mut() {	
-	if transform.translation.abs().y > 330.0 {
+fn scoring(windows: Res<Windows>,
+	   mut query: Query<(&mut Ball, &Transform)>) {
+    let window = windows.get_primary().unwrap();
+    if let Ok((mut ball, transform)) = query.single_mut() {
+	let bound = (window.height() / 2.0) - (BALL_SIZE / 2.0);
+	if transform.translation.abs().y > bound {
 	    ball.velocity.y = -1.0 * ball.velocity.y;
 	}
     }
@@ -99,25 +105,27 @@ fn ball_movement(time: Res<Time>,
 }
 
 fn computer_movement(time: Res<Time>,
-			    mut queries: QuerySet<(
-				Query<(&Computer, &mut Transform)>,
-				Query<(&Ball, &Transform)>)>) {
+		     windows: Res<Windows>,
+		     mut queries: QuerySet<(Query<(&Computer, &mut Transform)>,
+					    Query<(&Ball, &Transform)>)>) {
     let mut ball_center = Vec2::new(0.0, 0.0);
+    let window = windows.get_primary().unwrap();
     if let Ok((_ball, transform)) = queries.q1().single() {
-	ball_center.x = transform.translation.x + (BALL_SIZE / 2.0);
-	ball_center.y = transform.translation.y + (BALL_SIZE / 2.0);
+	ball_center.x = transform.translation.x;
+	ball_center.y = transform.translation.y;
     }
 
     if let Ok((_computer, mut transform)) = queries.q0_mut().single_mut() {
 	let movement;
 	let paddle_location = &mut transform.translation;
-	if paddle_location.y + (PADDLE_HEIGHT / 2.0) > ball_center.y {
-	    movement = -100.0;
+	if paddle_location.y > ball_center.y {
+	    movement = -(window.height() / 10.0);
 	} else {
-	    movement = 100.0;
+	    movement = window.height() / 10.0;
 	}
 	paddle_location.y += time.delta_seconds() * movement;
-	paddle_location.y = paddle_location.y.min(300.0).max(-300.0);
+	let max = (window.height() / 2.0) - (PADDLE_HEIGHT / 2.0);
+	paddle_location.y = paddle_location.y.min(max).max(-max);
     }
 }
 

@@ -10,9 +10,10 @@ static PADDLE_HEIGHT: f32 = 120.0;
 impl Plugin for PongPlugin {
     fn build(&self, app: &mut AppBuilder) {
 	app.add_startup_system(setup.system())
-	    .add_system(paddle_movement_system.system())
-	    .add_system(computer_movement_system.system())
-	    .add_system(ball_movement_system.system())
+	    .add_system(paddle_movement.system())
+	    .add_system(computer_movement.system())
+	    .add_system(ball_movement.system())
+	    .add_system(scoring.system())
 	    .add_system(collision_detection.system());
     }
 }
@@ -59,7 +60,7 @@ pub struct Ball {
     velocity: Vec2,
 }
 
-fn paddle_movement_system(time: Res<Time>,
+fn paddle_movement(time: Res<Time>,
 			  keyboard_input: Res<Input<KeyCode>>,
 			  mut query: Query<(&Player, &mut Transform)>) {
     if let Ok((_paddle, mut transform)) = query.single_mut() {
@@ -80,8 +81,16 @@ fn paddle_movement_system(time: Res<Time>,
     }
 }
 
-fn ball_movement_system(time: Res<Time>,
-			mut query: Query<(&Ball, &mut Transform)>) {
+fn scoring(mut query: Query<(&mut Ball, &Transform)>) {
+    if let Ok((mut ball, transform)) = query.single_mut() {	
+	if transform.translation.abs().y > 330.0 {
+	    ball.velocity.y = -1.0 * ball.velocity.y;
+	}
+    }
+}
+
+fn ball_movement(time: Res<Time>,
+		 mut query: Query<(&mut Ball, &mut Transform)>) {
     if let Ok((ball, mut transform)) = query.single_mut() {
 	let translation = &mut transform.translation;
 	translation.x += time.delta_seconds() * ball.velocity.x;
@@ -89,7 +98,7 @@ fn ball_movement_system(time: Res<Time>,
     }
 }
 
-fn computer_movement_system(time: Res<Time>,
+fn computer_movement(time: Res<Time>,
 			    mut queries: QuerySet<(
 				Query<(&Computer, &mut Transform)>,
 				Query<(&Ball, &Transform)>)>) {

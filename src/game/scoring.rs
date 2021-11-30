@@ -1,7 +1,8 @@
 use bevy::prelude::*;
 use std::fmt::{Display, Formatter};
-use crate::game::ball::Ball;
+use crate::game::ball::{Ball, create_ball};
 use crate::config::BALL_SIZE;
+use std::{thread, time};
 
 #[derive(Default)]
 pub struct Score {
@@ -67,15 +68,19 @@ pub fn scoring(windows: Res<Windows>,
 	if transform.translation.abs().y > bound {
 	    ball.velocity.y = -1.0 * ball.velocity.y;
 	}
-	if transform.translation.abs().x > window.width() / 2.0 {
+	if transform.translation.x > window.width() / 2.0 {
 	    commands.entity(entity).despawn_recursive();
 	    score_event.send(ScoreEvent { message: Scorer::Left });
-	}	
+	} else if transform.translation.x < -(window.width() / 2.0) {
+	    commands.entity(entity).despawn_recursive();
+	    score_event.send(ScoreEvent { message: Scorer::Right});
+	}
     }
 }
 
 pub fn score_listener(mut events: EventReader<ScoreEvent>,
 		      mut score: ResMut<Score>,
+		      mut commands: Commands,
 		      mut query: Query<&mut Text>) {
     for event in events.iter() {
 	if let Ok(mut text) = query.single_mut() {
@@ -84,6 +89,11 @@ pub fn score_listener(mut events: EventReader<ScoreEvent>,
 		Scorer::Right => score.right += 1
 	    }
 	    text.sections[0].value = score.to_string();
+	    thread::sleep(time::Duration::from_millis(100));
+	    commands.spawn_bundle(create_ball())
+		.insert(Ball {
+		    velocity: Vec2::new(100.0, 50.0)
+		});
 	}
     }
 }

@@ -2,16 +2,19 @@ use bevy::prelude::*;
 use bevy::sprite::collide_aabb::{collide, Collision};
 use crate::game::ball::*;
 use crate::game::paddle::*;
-use crate::game::scoring::scoring;
+use crate::game::scoring::*;
 
 pub struct PongPlugin;
 
 impl Plugin for PongPlugin {
     fn build(&self, app: &mut AppBuilder) {
 	app.add_startup_system(setup.system())
+	    .add_event::<ScoreEvent>()
+	    .insert_resource(Score { left: 0, right: 0 })
 	    .add_startup_system(player_setup.system())
 	    .add_startup_system(computer_setup.system())
 	    .add_startup_system(ball_setup.system())
+	    .add_system(score_listener.system())
 	    .add_system(paddle_movement.system())
 	    .add_system(computer_movement.system())
 	    .add_system(ball_movement.system())
@@ -20,9 +23,10 @@ impl Plugin for PongPlugin {
     }
 }
 
-fn setup(mut commands: Commands) {
+fn setup(mut commands: Commands, asset_server: Res<AssetServer>, score: ResMut<Score>) {
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
     commands.spawn_bundle(UiCameraBundle::default());
+    spawn_score_board(&mut commands, asset_server, score);
 }
 
 fn collision_detection(paddles: Query<(&Transform, &Sprite), With<Paddle>>,

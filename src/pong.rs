@@ -30,16 +30,17 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, score: ResMut<S
 }
 
 fn collision_detection(paddles: Query<(&Transform, &Sprite), With<Paddle>>,
+		       windows: Res<Windows>,
 		       mut ball: Query<(&mut Ball, &Transform, &Sprite)>) {
-    if let Ok((mut ball, transform, ball_sprite)) = ball.single_mut() {
+    if let (Ok((mut ball, transform, ball_sprite)), window) = (ball.single_mut(), windows.get_primary().unwrap()) {
 	for (paddle_transform, sprite) in paddles.iter() {
 	    if let Some(collision) = collide(transform.translation,
 					     ball_sprite.size,
 					     paddle_transform.translation,
 					     sprite.size) {
 		match collision {
-		    Collision::Left =>  ball.velocity.x = -1.5 * ball.velocity.x,
-		    Collision::Right => ball.velocity.x = -1.5 * ball.velocity.x,
+		    Collision::Left =>  ball.velocity.x = (-1.1 * ball.velocity.x).min(window.width() * 0.45),
+		    Collision::Right => ball.velocity.x = (-1.1 * ball.velocity.x).min(window.width() * 0.45),
 		    _ => ball.velocity.y = -1.0 * ball.velocity.y,
 		}
 	    }	

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 use std::fmt::{Display, Formatter};
-use crate::game::ball::{Ball, create_ball};
+use crate::game::ball::{Ball, create_ball, create_ball_sprite};
 use crate::config::BALL_SIZE;
 use std::{thread, time};
 
@@ -90,10 +90,8 @@ pub fn score_listener(mut events: EventReader<ScoreEvent>,
 	    }
 	    text.sections[0].value = score.to_string();
 	    thread::sleep(time::Duration::from_millis(100));
-	    commands.spawn_bundle(create_ball())
-		.insert(Ball {
-		    velocity: Vec2::new(100.0, 50.0)
-		});
+	    commands.spawn_bundle(create_ball_sprite())
+		.insert(create_ball(&event.message));
 	}
     }
 }

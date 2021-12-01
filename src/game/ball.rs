@@ -1,12 +1,12 @@
 use bevy::prelude::*;
-use crate::config::BALL_SIZE;
+use rand::{Rng};
+use crate::config::{BALL_SIZE, BALL_SPEED};
+use crate::game::scoring::Scorer;
 
 pub fn ball_setup(mut commands: Commands) {
-    commands
-        .spawn_bundle(create_ball())
-	.insert(Ball {
-	    velocity: Vec2::new(-200.0, -50.0)
-	});
+     commands
+        .spawn_bundle(create_ball_sprite())
+	.insert(create_ball(&Scorer::Left));
 }
 
 pub struct Ball {
@@ -22,10 +22,21 @@ pub fn ball_movement(time: Res<Time>,
     }
 }
 
-pub fn create_ball() -> SpriteBundle {
+pub fn create_ball_sprite() -> SpriteBundle {
     SpriteBundle {
         transform: Transform::from_xyz(0.0, 0.0, 0.0),
 	sprite: Sprite::new(Vec2::new(BALL_SIZE, BALL_SIZE)),
         ..Default::default()
+    }
+}
+
+pub fn create_ball(scorer: &Scorer) -> Ball {
+    let angle = rand::thread_rng().gen_range(-100.0..100.0);
+    let speed = match scorer {
+	&Scorer::Left => -BALL_SPEED,
+	&Scorer::Right => BALL_SPEED
+    };
+    Ball {
+	velocity: Vec2::new(speed, angle)
     }
 }

@@ -5,7 +5,7 @@ pub fn ball_setup(mut commands: Commands) {
     commands
         .spawn_bundle(create_ball())
 	.insert(Ball {
-	    velocity: Vec2::new(-100.0, -50.0)
+	    velocity: Vec2::new(-200.0, -50.0)
 	});
 }
 

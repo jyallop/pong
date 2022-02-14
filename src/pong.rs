@@ -1,8 +1,8 @@
 use bevy::prelude::*;
-use bevy::sprite::collide_aabb::{collide, Collision};
 use crate::game::ball::*;
 use crate::game::paddle::*;
 use crate::game::scoring::*;
+use crate::physics::physics_engine::*;
 
 pub struct PongPlugin;
 
@@ -28,23 +28,3 @@ fn setup(mut commands: Commands, asset_server: Res<AssetServer>, score: ResMut<S
     commands.spawn_bundle(UiCameraBundle::default());
     spawn_score_board(&mut commands, asset_server, score);
 }
-
-fn collision_detection(paddles: Query<(&Transform, &Sprite), With<Paddle>>,
-		       windows: Res<Windows>,
-		       mut ball: Query<(&mut Ball, &Transform, &Sprite)>) {
-    if let (Ok((mut ball, transform, ball_sprite)), window) = (ball.single_mut(), windows.get_primary().unwrap()) {
-	for (paddle_transform, sprite) in paddles.iter() {
-	    if let Some(collision) = collide(transform.translation,
-					     ball_sprite.size,
-					     paddle_transform.translation,
-					     sprite.size) {
-		match collision {
-		    Collision::Left =>  ball.velocity.x = (-1.1 * ball.velocity.x).min(window.width() * 0.45),
-		    Collision::Right => ball.velocity.x = (-1.1 * ball.velocity.x).min(window.width() * 0.45),
-		    _ => ball.velocity.y = -1.0 * ball.velocity.y,
-		}
-	    }	
-	}
-    }
-}
-

@@ -1,6 +1,7 @@
 mod pong;
 mod game;
 mod config;
+mod physics;
 
 use bevy::prelude::*;
 use crate::pong::PongPlugin;
@@ -11,4 +12,5 @@ pub fn main() {
 	.add_plugin(PongPlugin)
 	.run();
 }
+
 

@@ -40,3 +40,13 @@ pub fn create_ball(scorer: &Scorer) -> Ball {
 	velocity: Vec2::new(speed, angle)
     }
 }
+
+impl Ball {
+    pub fn adjust_angle(&mut self, angle: f32) -> () {
+	self.velocity.y = if self.velocity.y > 0.0 {
+	    self.velocity.y * (1.0 + angle)
+	} else {
+	    self.velocity.y * (1.0 - angle)
+	}
+    }
+}

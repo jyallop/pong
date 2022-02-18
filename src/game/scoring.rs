@@ -27,11 +27,10 @@ pub enum Scorer {
     Right,
 }
 
-pub fn spawn_score_board(commands: &mut Commands,
+pub fn score_board(mut commands: Commands,
 			 asset_server: Res<AssetServer>,
 			 score: ResMut<Score>) {
-    commands
-	.spawn()
+    commands.spawn()
 	.insert_bundle(TextBundle {
 	    style: Style {
 		size: Size::new(Val::Px(100.0), Val::Px(50.0)),

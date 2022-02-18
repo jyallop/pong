@@ -2,6 +2,7 @@ use bevy::prelude::*;
 use rand::{Rng};
 use crate::config::{BALL_SIZE, BALL_SPEED};
 use crate::game::scoring::Scorer;
+use crate::pong::GameState;
 
 pub fn ball_setup(mut commands: Commands) {
      commands
@@ -14,11 +15,14 @@ pub struct Ball {
 }
 
 pub fn ball_movement(time: Res<Time>,
-		     mut query: Query<(&mut Ball, &mut Transform)>) {
-    if let Ok((ball, mut transform)) = query.single_mut() {
-	let translation = &mut transform.translation;
-	translation.x += time.delta_seconds() * ball.velocity.x;
-	translation.y += time.delta_seconds() * ball.velocity.y;
+		     mut query: Query<(&mut Ball, &mut Transform)>,
+		     state: Res<State<GameState>>) {
+    if *state.current() == GameState::Running {
+	if let Ok((ball, mut transform)) = query.single_mut() {
+	    let translation = &mut transform.translation;
+	    translation.x += time.delta_seconds() * ball.velocity.x;
+	    translation.y += time.delta_seconds() * ball.velocity.y;
+	}
     }
 }
 
@@ -47,6 +51,12 @@ impl Ball {
 	    self.velocity.y * (1.0 + angle)
 	} else {
 	    self.velocity.y * (1.0 - angle)
-	}
+	};
+	if self.velocity.y < 30.0 && self.velocity.y > 0.0 {
+	    self.velocity.y = 30.0;
+	};
+	if self.velocity.y > -30.0 && self.velocity.y < 0.0 {
+	    self.velocity.y = -30.0;
+	};
     }
 }
